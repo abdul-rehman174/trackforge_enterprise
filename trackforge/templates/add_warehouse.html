@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if form.instance.pk %}Update{% else %}Add{% endif %} Warehouse</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; }
+        .container { width: 400px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { width: 100%; padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 16px; }
+        .btn-submit { background-color: #007bff; color: white; }
+        a { display: block; text-align: center; margin-top: 10px; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{% if form.instance.pk %}Update{% else %}Add{% endif %} Warehouse</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" class="btn btn-submit" value="{% if form.instance.pk %}Update{% else %}Add{% endif %}">
+        </form>
+        <a href="{% url 'warehouse_list' %}">Back to Warehouse List</a>
+    </div>
+</body>
+</html>

@@ -23,7 +23,7 @@ urlpatterns = [
     path('inventory/', include('inventory.urls')),
     path('procurement/', include('procurement.urls')),
     path('stock/', include('stock.urls')),
-    path('warehouse/', include('warehouse.urls')),
+    path('warehouses/', include('warehouses.urls')),
 
 
 ]

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Warehouse List</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; }
+        h1 { text-align: center; color: #333; margin-top: 20px; }
+        .container { width: 90%; max-width: 900px; margin: 20px auto; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        a { text-decoration: none; font-weight: bold; }
+        .btn { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; }
+        .btn-add { background-color: #28a745; color: white; float: right; margin-bottom: 10px; }
+        .btn-edit { background-color: #ffc107; color: white; }
+        .btn-delete { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Warehouse List</h1>
+    <div class="container">
+        <a href="{% url 'add_warehouse' %}" class="btn btn-add">+ Add Warehouse</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for warehouse in warehouses %}
+                    <tr>
+                        <td>{{ warehouse.id }}</td>
+                        <td>{{ warehouse.code }}</td>
+                        <td>{{ warehouse.name }}</td>
+                        <td>
+                            <a href="{% url 'update_warehouse' warehouse.id %}" class="btn btn-edit">Edit</a>
+                            <a href="{% url 'delete_warehouse' warehouse.id %}" class="btn btn-delete">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" style="text-align:center;">No warehouses found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
