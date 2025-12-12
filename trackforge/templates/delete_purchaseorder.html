@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Purchase Order</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; }
+        .container { width: 400px; margin: 100px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #dc3545; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border-radius: 4px; border: none; cursor: pointer; font-size: 16px; margin: 5px; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-cancel { background-color: #6c757d; color: white; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confirm Delete</h1>
+        <p>Are you sure you want to delete purchase order <strong>#{{ order.id }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="Delete" class="btn btn-delete">
+        </form>
+        <a href="{% url 'purchaseorder_list' %}" class="btn btn-cancel">Cancel</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Supplier</title>
+    <style>
+        .container {
+            width: 25%;
+            margin: 100px auto;
+            text-align: center;
+            border: 1px solid #ccc;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        input[type=submit], a {
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        input[type=submit] {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        a {
+            background-color: #ccc;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Are you sure you want to delete "{{ supplier.name }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Delete">
+        <a href="{% url 'supplier_list' %}">Cancel</a>
+    </form>
+</div>
+
+</body>
+</html>

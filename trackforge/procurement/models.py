@@ -17,7 +17,5 @@ class PurchaseOrder(models.Model):
         default='draft'
     )
 
-
-
     def __str__(self):
         return f"PO-{self.id} ({self.supplier.name})"
