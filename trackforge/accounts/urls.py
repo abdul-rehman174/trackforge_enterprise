@@ -1,6 +1,5 @@
 
-from django.contrib import admin
-from django.urls import path,include
+from django.urls import path
 from .views import user_list , create_user,update_user,delete_user
 
 urlpatterns = [

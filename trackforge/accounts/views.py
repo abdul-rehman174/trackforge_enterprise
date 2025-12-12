@@ -13,7 +13,7 @@ def create_user(request):
         form = CustomUserForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("/accounts/user_list")
+            return redirect("user_list")
 
     else:
         form = CustomUserForm()
@@ -25,7 +25,7 @@ def update_user(request,pk):
         form = CustomUserForm(request.POST,instance = user)
         if form.is_valid():
             form.save()
-            return redirect("/accounts/user_list")
+            return redirect("user_list")
     else:
         form = CustomUserForm(instance = user)
         return render(request,"create_user.html",{"form":form, "button_label":"Update"})
@@ -36,7 +36,7 @@ def delete_user(request, pk):
 
     if request.method == "POST":
         user.delete()
-        return redirect("/accounts/user_list")
+        return redirect("user_list")
     else:
         return render(request,"delete_user.html",{"user":user})
 
