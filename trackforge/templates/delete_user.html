@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* center content horizontally */
+            justify-content: center; /* center vertically */
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .delete-btn {
+            padding: 15px 40px; /* bigger button */
+            font-size: 20px;
+            color: white;
+            background-color: red;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+
+        .cancel-link {
+            display: inline-block;
+            margin-top: 15px;
+            font-size: 16px;
+            text-decoration: none;
+            color: #555;
+        }
+
+        .cancel-link:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Delete User</h1>
+<p>Are you sure you want to delete user: <strong>{{ user.username }}</strong>?</p>
+
+<form method="post" action="{% url 'delete_user' user.id %}">
+    {% csrf_token %}
+    <button type="submit" class="delete-btn">Delete</button>
+</form>
+
+<a href="{% url 'user_list' %}" class="cancel-link">Cancel</a>
+
+</body>
+</html>

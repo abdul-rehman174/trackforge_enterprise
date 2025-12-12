@@ -1,15 +1,8 @@
-from xxlimited import Str
-
 from django.shortcuts import render,redirect,HttpResponse
-from django.http import JsonResponse
-
 from .models import CustomUser
 from .forms import CustomUserForm
 
 
-# def user_list(request):
-#     users = list(CustomUser.objects.values("first_name", "last_name", "email"))
-#     return JsonResponse({"users": users})
 
 def user_list(request):
     users = CustomUser.objects.all()
@@ -24,6 +17,27 @@ def create_user(request):
 
     else:
         form = CustomUserForm()
-    return render(request,"create_user.html",{"form":form})
+    return render(request,"create_user.html",{"form":form ,"button_label":"Create"})
+
+def update_user(request,pk):
+    user = CustomUser.objects.get(pk=pk)
+    if request.method == "POST":
+        form = CustomUserForm(request.POST,instance = user)
+        if form.is_valid():
+            form.save()
+            return redirect("/accounts/user_list")
+    else:
+        form = CustomUserForm(instance = user)
+        return render(request,"create_user.html",{"form":form, "button_label":"Update"})
+
+
+def delete_user(request, pk):
+    user = CustomUser.objects.get(pk=pk)
+
+    if request.method == "POST":
+        user.delete()
+        return redirect("/accounts/user_list")
+    else:
+        return render(request,"delete_user.html",{"user":user})
 
 
