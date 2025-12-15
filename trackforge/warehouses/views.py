@@ -6,7 +6,7 @@ from .forms import WarehouseForm
 @login_required
 def warehouse_list(request):
     warehouses = Warehouse.objects.all()
-    return render(request, 'warehouse_list.html', {'warehouses': warehouses})
+    return render(request, 'warehouse/warehouse_list.html', {'warehouses': warehouses})
 
 
 @permission_required('warehouses.add_warehouse',raise_exception=True)
@@ -18,7 +18,7 @@ def add_warehouse(request):
             return redirect('warehouse_list')
     else:
         form = WarehouseForm()
-    return render(request, 'add_warehouse.html', {'form': form})
+    return render(request, 'warehouse/add_warehouse.html', {'form': form})
 
 
 @permission_required('warehouses.change_warehouse',raise_exception=True)
@@ -31,7 +31,7 @@ def update_warehouse(request, pk):
             return redirect('warehouse_list')
     else:
         form = WarehouseForm(instance=warehouse)
-    return render(request, 'add_warehouse.html', {'form': form})
+    return render(request, 'warehouse/add_warehouse.html', {'form': form})
 
 
 @permission_required('warehouses.delete_warehouse',raise_exception=True)
@@ -40,4 +40,4 @@ def delete_warehouse(request, pk):
     if request.method == 'POST':
         warehouse.delete()
         return redirect('warehouse_list')
-    return render(request, 'delete_warehouse.html', {'warehouse': warehouse})
+    return render(request, 'warehouse/delete_warehouse.html', {'warehouse': warehouse})

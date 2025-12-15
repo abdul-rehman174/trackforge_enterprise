@@ -33,7 +33,7 @@ def register_user(request):
             return redirect("login")
     else:
         form = CustomUserForm()
-    return render(request,"register_user.html",{"form":form ,"button_label":"Register"})
+    return render(request,"accounts/register_user.html",{"form":form ,"button_label":"Register"})
 
 
 def login(request):
@@ -54,7 +54,7 @@ def logout(request):
 @login_required
 def user_list(request):
     users = CustomUser.objects.all()
-    return render(request,"user_list.html",{"users":users})
+    return render(request,"accounts/user_list.html",{"users":users})
 
 
 @permission_required('accounts.change_customuser',raise_exception=True)
@@ -67,7 +67,7 @@ def update_user(request,pk):
             return redirect("user_list")
     else:
         form = CustomUserForm(instance = user)
-        return render(request,"register_user.html",{"form":form, "button_label":"Update"})
+        return render(request,"accounts/register_user.html",{"form":form, "button_label":"Update"})
 
 
 @permission_required('accounts.delete_customuser',raise_exception=True)
@@ -78,6 +78,6 @@ def delete_user(request, pk):
         user.delete()
         return redirect("user_list")
     else:
-        return render(request,"delete_user.html",{"user":user})
+        return render(request,"accounts/delete_user.html",{"user":user})
 
 

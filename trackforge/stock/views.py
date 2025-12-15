@@ -6,7 +6,7 @@ from .forms import StockForm
 @login_required
 def stock_list(request):
     stocks = Stock.objects.all()
-    return render(request, 'stock_list.html', {'stocks': stocks})
+    return render(request, 'stock/stock_list.html', {'stocks': stocks})
 
 
 @permission_required('stock.add_stock',raise_exception=True)
@@ -18,7 +18,7 @@ def add_stock(request):
             return redirect('stock_list')
     else:
         form = StockForm()
-    return render(request, 'add_stock.html', {'form': form})
+    return render(request, 'stock/add_stock.html', {'form': form})
 
 
 @permission_required('stock.change_stock',raise_exception=True)
@@ -31,7 +31,7 @@ def update_stock(request, pk):
             return redirect('stock_list')
     else:
         form = StockForm(instance=stock)
-    return render(request, 'add_stock.html', {'form': form})
+    return render(request, 'stock/add_stock.html', {'form': form})
 
 
 @permission_required('stock.delete_stock',raise_exception=True)
@@ -40,4 +40,4 @@ def delete_stock(request, pk):
     if request.method == 'POST':
         stock.delete()
         return redirect('stock_list')
-    return render(request, 'delete_stock.html', {'stock': stock})
+    return render(request, 'stock/delete_stock.html', {'stock': stock})

@@ -8,7 +8,7 @@ from .forms import SupplierForm, PurchaseOrderForm
 @login_required
 def supplier_list(request):
     suppliers = Supplier.objects.all()
-    return render(request, 'supplier_list.html', {'suppliers': suppliers})
+    return render(request, 'supplier/supplier_list.html', {'suppliers': suppliers})
 
 
 @permission_required('procurement.add_supplier',raise_exception=True)
@@ -20,7 +20,7 @@ def add_supplier(request):
             return redirect('supplier_list')
     else:
         form = SupplierForm()
-    return render(request, 'add_supplier.html', {'form': form})
+    return render(request, 'supplier/add_supplier.html', {'form': form})
 
 
 @permission_required('procurement.change_supplier',raise_exception=True)
@@ -33,7 +33,7 @@ def update_supplier(request, pk):
             return redirect('supplier_list')
     else:
         form = SupplierForm(instance=supplier)
-    return render(request, 'add_supplier.html', {'form': form})
+    return render(request, 'supplier/add_supplier.html', {'form': form})
 
 
 @permission_required('procurement.delete_supplier',raise_exception=True)
@@ -42,14 +42,14 @@ def delete_supplier(request, pk):
     if request.method == 'POST':
         supplier.delete()
         return redirect('supplier_list')
-    return render(request, 'delete_supplier.html', {'supplier': supplier})
+    return render(request, 'supplier/delete_supplier.html', {'supplier': supplier})
 
 
 # PurchaseOrder Views
 @login_required
 def purchaseorder_list(request):
     orders = PurchaseOrder.objects.all()
-    return render(request, 'purchaseorder_list.html', {'orders': orders})
+    return render(request, 'purchaseorder/purchaseorder_list.html', {'orders': orders})
 
 
 @permission_required('procurement.add_purchaseorder',raise_exception=True)
@@ -61,7 +61,7 @@ def add_purchaseorder(request):
             return redirect('purchaseorder_list')
     else:
         form = PurchaseOrderForm()
-    return render(request, 'add_purchaseorder.html', {'form': form})
+    return render(request, 'purchaseorder/add_purchaseorder.html', {'form': form})
 
 
 @permission_required('procurement.change_purchaseorder',raise_exception=True)
@@ -74,7 +74,7 @@ def update_purchaseorder(request, pk):
             return redirect('purchaseorder_list')
     else:
         form = PurchaseOrderForm(instance=order)
-    return render(request, 'add_purchaseorder.html', {'form': form})
+    return render(request, 'purchaseorder/add_purchaseorder.html', {'form': form})
 
 
 @permission_required('procurement.delete_purchaseorder',raise_exception=True)
@@ -83,4 +83,4 @@ def delete_purchaseorder(request, pk):
     if request.method == 'POST':
         order.delete()
         return redirect('purchaseorder_list')
-    return render(request, 'delete_purchaseorder.html', {'order': order})
+    return render(request, 'purchaseorder/delete_purchaseorder.html', {'order': order})
