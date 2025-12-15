@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render,redirect,HttpResponse
 from .models import CustomUser
 from .forms import CustomUserForm
@@ -20,7 +21,6 @@ def dashboard(request):
         'po_count': PurchaseOrder.objects.count(),
     }
     return render(request, 'dashboard.html', context)
-
 
 
 def register_user(request):
@@ -51,10 +51,13 @@ def logout(request):
     auth.logout(request)
     return redirect('/')
 
+@login_required
 def user_list(request):
     users = CustomUser.objects.all()
     return render(request,"user_list.html",{"users":users})
 
+
+@permission_required('accounts.change_customuser',raise_exception=True)
 def update_user(request,pk):
     user = CustomUser.objects.get(pk=pk)
     if request.method == "POST":
@@ -67,6 +70,7 @@ def update_user(request,pk):
         return render(request,"register_user.html",{"form":form, "button_label":"Update"})
 
 
+@permission_required('accounts.delete_customuser',raise_exception=True)
 def delete_user(request, pk):
     user = CustomUser.objects.get(pk=pk)
 
