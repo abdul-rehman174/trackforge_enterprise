@@ -1,13 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-# We assume you created the 'core' app as discussed.
-# If not, change 'AuditableModel' to 'models.Model' for now.
 from core.models import AuditableModel
 
 
-# ==========================================
-# 1. WAREHOUSE (Physical Locations)
-# ==========================================
 class Warehouse(AuditableModel):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, unique=True, help_text="Unique code e.g. WH-NY-01")
@@ -18,9 +13,6 @@ class Warehouse(AuditableModel):
         return f"{self.name} ({self.code})"
 
 
-# ==========================================
-# 2. PRODUCT (The Item Definitions)
-# ==========================================
 class Category(AuditableModel):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
@@ -49,9 +41,6 @@ class Product(AuditableModel):
         return f"{self.name} ({self.sku})"
 
 
-# ==========================================
-# 3. STOCK (The Current Balance)
-# ==========================================
 class Stock(AuditableModel):
     """
     The 'Live' view of inventory.
@@ -69,9 +58,6 @@ class Stock(AuditableModel):
         return f"{self.product.sku} @ {self.warehouse.code}: {self.quantity}"
 
 
-# ==========================================
-# 4. STOCK TRANSACTION (The Audit Trail)
-# ==========================================
 class StockTransaction(AuditableModel):
     """
     The 'History' view.
@@ -88,6 +74,7 @@ class StockTransaction(AuditableModel):
 
     quantity_changed = models.DecimalField(max_digits=12, decimal_places=2,
                                            help_text="Negative for removal, Positive for addition")
+
     stock_after_transaction = models.DecimalField(max_digits=12, decimal_places=2,
                                                   help_text="Snapshot of balance after this movement")
 
