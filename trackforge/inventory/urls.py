@@ -2,6 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+
+    # --- 1. Products  ---
     path("product_list/", product_list, name="product_list"),
     path("add_product/", add_product, name="add_product"),
     path("update_product/<int:pk>/", update_product, name="update_product"),
@@ -18,8 +20,10 @@ urlpatterns = [
     path('warehouses/add/', warehouse_create, name='warehouse_create'),
     path('warehouses/edit/<int:pk>/', warehouse_update, name='warehouse_update'),
     path('warehouses/delete/<int:pk>/', warehouse_delete, name='warehouse_delete'),
+
     # --4. Stock  ---
     path('stock/', stock_list, name='stock_list'),
+
     # --- 5. Transaction  ---
     path('transaction_history/', transaction_history, name='transaction_history'),
 

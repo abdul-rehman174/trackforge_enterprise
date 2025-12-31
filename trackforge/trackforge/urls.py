@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from core.views import dashboard
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('inventory/', include('inventory.urls')),
+    path('', dashboard, name='dashboard'),  # The landing page
     # path('procurement/', include('procurement.urls')),
-
 
 ]
