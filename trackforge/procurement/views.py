@@ -86,26 +86,3 @@ def po_detail(request, pk):
         'items': items,  # Pass the calculated LIST, not the queryset
         'grand_total': grand_total
     })
-def add_po(request):
-    if request.method == 'POST':
-        po_form = PurchaseOrderForm(request.POST)
-        # Force the prefix to 'items'
-        formset = POLineItemFormSet(request.POST, prefix='items')
-
-        if po_form.is_valid() and formset.is_valid():
-            purchase_order = po_form.save()
-            # Save items linked to the order
-            items = formset.save(commit=False)
-            for item in items:
-                item.purchase_order = purchase_order
-                item.save()
-            return redirect('purchaseorder_list')
-    else:
-        po_form = PurchaseOrderForm()
-        # Use the same prefix for the empty forms
-        formset = POLineItemFormSet(prefix='items')
-
-    return render(request, "purchaseorder/add_po.html", {
-        "po_form": po_form,
-        "formset": formset
-    })
