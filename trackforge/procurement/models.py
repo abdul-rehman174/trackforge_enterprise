@@ -14,7 +14,7 @@ class Supplier(AuditableModel):
 
 
 class PurchaseOrder(AuditableModel):
-    # Professional status tracking
+
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('submitted', 'Submitted'),
