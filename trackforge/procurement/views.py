@@ -71,8 +71,6 @@ def purchaseorder_list(request):
 def po_detail(request, pk):
     order = get_object_or_404(PurchaseOrder, pk=pk)
 
-    # 1. Get the items and convert them to a LIST immediately
-    # This prevents the template from re-fetching "empty" objects from the DB.
     items = list(order.items.all())
 
     grand_total = 0
@@ -83,7 +81,7 @@ def po_detail(request, pk):
 
     return render(request, 'purchaseorder/po_detail.html', {
         'order': order,
-        'items': items,  # Pass the calculated LIST, not the queryset
+        'items': items,
         'grand_total': grand_total
     })
 def add_po(request):
