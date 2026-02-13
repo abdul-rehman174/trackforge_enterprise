@@ -75,7 +75,6 @@ def po_detail(request, pk):
 
     grand_total = 0
     for item in items:
-        # 2. Attach the math to each item in the list
         item.line_total = item.quantity * item.unit_price
         grand_total += item.line_total
 
