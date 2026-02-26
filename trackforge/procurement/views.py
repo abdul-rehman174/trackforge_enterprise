@@ -99,7 +99,6 @@ def add_po(request):
             return redirect('purchaseorder_list')
     else:
         po_form = PurchaseOrderForm()
-        # Use the same prefix for the empty forms
         formset = POLineItemFormSet(prefix='items')
 
     return render(request, "purchaseorder/add_po.html", {
