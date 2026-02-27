@@ -86,12 +86,10 @@ def po_detail(request, pk):
 def add_po(request):
     if request.method == 'POST':
         po_form = PurchaseOrderForm(request.POST)
-        # Force the prefix to 'items'
         formset = POLineItemFormSet(request.POST, prefix='items')
 
         if po_form.is_valid() and formset.is_valid():
             purchase_order = po_form.save()
-            # Save items linked to the order
             items = formset.save(commit=False)
             for item in items:
                 item.purchase_order = purchase_order
