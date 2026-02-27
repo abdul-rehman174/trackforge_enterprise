@@ -51,10 +51,8 @@ from .models import PurchaseOrder
 
 @login_required
 def purchaseorder_list(request):
-    # Fixed ordering: Newest POs appear first
     orders = PurchaseOrder.objects.all().order_by('-id')
 
-    # Logic for the professional stat cards
     stats = {
         'total': orders.count(),
         'pending': orders.filter(status__in=['draft', 'submitted']).count(),
