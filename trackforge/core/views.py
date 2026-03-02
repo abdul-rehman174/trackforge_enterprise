@@ -20,8 +20,5 @@ def dashboard(request):
         'supplier_count': Supplier.objects.count(),
         'po_count':PurchaseOrder.objects.count()
 
-        # If you haven't made the procurement models yet,
-        # keep these commented out or set to 0 to avoid errors.
-        # 'po_count': PurchaseOrder.objects.count(),
     }
     return render(request, 'dashboard.html', context)
