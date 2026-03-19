@@ -2,80 +2,223 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Products</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackForge | Product Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Reusing TrackForge Core Design Tokens */
+        :root {
+            --primary: #273c75;
+            --secondary: #40739e;
+            --bg: #f5f6fa;
+            --text: #2f3640;
+            --white: #ffffff;
+            --green: #44bd32;
+            --red: #e84118;
+            --light-gray: #dcdde1;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
         }
-        table {
-            width: 80%;
-            border-collapse: collapse;
-            margin: auto;
-            background-color: #fff;
+
+        /* Sidebar Styling - Global TrackForge Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
         }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
             text-align: center;
+            letter-spacing: 1px;
         }
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-        a {
+
+        .sidebar a {
+            color: #dcdde1;
             text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 5px;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--secondary);
             color: white;
         }
-        .edit {
-            background-color: #28a745;
+
+        /* Main Content Layout - Matches User List (300px margin) */
+        .main-content {
+            margin-left: 300px;
+            padding: 40px;
+            flex: 1;
         }
-        .delete {
-            background-color: #dc3545;
+
+        /* Header Section - Matches Dashboard/User List Header */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .add-product {
+
+        /* Table Card Container - Matches the Table Card styling */
+        .table-container {
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-top: 5px solid var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 18px;
+            text-align: left;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        td {
+            padding: 18px;
+            border-bottom: 1px solid #edf2f7;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: 0.2s;
             display: inline-block;
-            margin: 20px auto;
-            background-color: #007bff;
+        }
+
+        .btn-edit { background-color: var(--secondary); color: white; }
+        .btn-delete { background-color: var(--red); color: white; margin-left: 5px; }
+
+        .btn-add {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .no-data {
+            padding: 40px;
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        .id-badge {
+            background: #eee;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary);
         }
     </style>
 </head>
 <body>
 
-<h2 style="text-align:center;">Product List</h2>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>TRACKFORGE</h2>
+        <a href="/">🏠 Dashboard</a>
+        <a href="{% url 'user_list' %}">👥 Users</a>
+        <a href="{% url 'product_list' %}" class="active">📦 Products</a>
+        <a href="{% url 'category_list' %}">📁 Categories</a>
+        <a href="{% url 'supplier_list' %}">🚚 Suppliers</a>
+        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
+        <a href="{% url 'purchaseorder_list' %}">🧾 PO Management</a>
+        <a href="{% url 'stock_list' %}">📊 Live Stock</a>
+        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
+    </div>
 
-<a href="{% url 'add_product' %}" class="add-product">Add Product</a>
+    <div class="main-content">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Product Management</h1>
+            <a href="{% url 'add_product' %}" class="btn-add">
+                <i class="fas fa-plus"></i> Add Product
+            </a>
+        </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for product in products %}
-        <tr>
-            <td>{{ product.id }}</td>
-            <td>{{ product.name }}</td>
-            <td>{{ product.description }}</td>
-            <td>
-                <a href="{% url 'update_product' product.id %}" class="edit">Edit</a>
-                <a href="{% url 'delete_product' product.id %}" class="delete">Delete</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">No products found.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <!-- Table Card -->
+        <div class="table-container">
+            {% if products %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product Name</th>
+                        <th>Description</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td><span class="id-badge">#{{ product.id }}</span></td>
+                        <td><strong>{{ product.name }}</strong></td>
+                        <td style="color: #7f8c8d; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ product.description }}
+                        </td>
+                        <td style="text-align: center;">
+                            <a href="{% url 'update_product' product.id %}" class="btn-action btn-edit">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'delete_product' product.id %}" class="btn-action btn-delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-box-open fa-3x" style="display:block; margin-bottom:15px; opacity:0.3;"></i>
+                No products found in the catalog.
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
 </body>
 </html>
