@@ -2,61 +2,200 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% if form.instance.pk %}Update Product{% else %}Add Product{% endif %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackForge | {% if form.instance.pk %}Update{% else %}Add{% endif %} Product</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Reusing TrackForge Core Design Tokens */
+        :root {
+            --primary: #273c75;
+            --secondary: #40739e;
+            --bg: #f5f6fa;
+            --text: #2f3640;
+            --white: #ffffff;
+            --accent: #273c75; /* Primary color for Products */
+            --light-gray: #dcdde1;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin-top: 50px;
-            background-color: #f5f5f5;
         }
-        form {
-            background-color: #fff;
-            padding: 30px;
+
+        /* Hiding Django help text for a cleaner UI */
+        .helptext {
+            display: none;
+        }
+
+        /* Sidebar Styling - Global TrackForge Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: #dcdde1;
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
             border-radius: 8px;
-            box-shadow: 0 0 10px #ccc;
-            width: 400px;
+            margin-bottom: 8px;
+            transition: 0.3s;
         }
-        input, select {
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        /* Main Content Layout - CENTERED */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Horizontally centers the card */
+        }
+
+        .header-section {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            box-sizing: border-box;
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
         }
-        button {
+
+        /* Form Card Container */
+        .form-card {
+            width: 100%;
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            max-width: 600px;
+            border-top: 5px solid var(--primary);
+        }
+
+        .form-card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+        }
+
+        /* Styling Django Form fields */
+        form p {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        select,
+        textarea {
             width: 100%;
             padding: 12px;
-            background-color: #007bff;
+            border-radius: 8px;
+            border: 1px solid var(--light-gray);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(64, 115, 158, 0.1);
+        }
+
+        .btn-save {
+            background-color: var(--primary);
             color: white;
+            padding: 12px 30px;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .btn-save:hover {
+            background-color: var(--secondary);
         }
-        a {
-            margin-top: 15px;
+
+        .back-link {
             display: inline-block;
+            margin-top: 20px;
             text-decoration: none;
-            color: #007bff;
+            color: var(--secondary);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
-<h2>{% if form.instance.pk %}Update Product{% else %}Add Product{% endif %}</h2>
+    <div class="sidebar">
+        <h2>TRACKFORGE</h2>
+        <a href="/">🏠 Dashboard</a>
+        <a href="{% url 'user_list' %}">👥 Users</a>
+        <a href="{% url 'product_list' %}" class="active">📦 Products</a>
+        <a href="{% url 'category_list' %}">📁 Categories</a>
+        <a href="{% url 'supplier_list' %}">🚚 Suppliers</a>
+        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
+        <a href="{% url 'purchaseorder_list' %}">🧾 PO Management</a>
+        <a href="{% url 'stock_list' %}">📊 Live Stock</a>
+        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
+    </div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">{% if form.instance.pk %}Update{% else %}Add{% endif %}</button>
-</form>
+    <div class="main-content">
+        <div class="header-section">
+            <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Inventory Management</h1>
+        </div>
 
-<a href="{% url 'product_list' %}">Back to Product List</a>
+        <div class="form-card">
+            <h2>
+                <i class="fas {% if form.instance.pk %}fa-edit{% else %}fa-plus-circle{% endif %}"></i>
+                {% if form.instance.pk %}Update Product{% else %}Add New Product{% endif %}
+            </h2>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> {% if form.instance.pk %}Update Product{% else %}Save Product{% endif %}
+                </button>
+            </form>
+
+            <a href="{% url 'product_list' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Product List
+            </a>
+        </div>
+    </div>
 
 </body>
 </html>
