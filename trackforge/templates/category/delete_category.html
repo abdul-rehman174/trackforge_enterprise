@@ -1,7 +1,197 @@
-<h2>Delete Category</h2>
-<p>Are you sure you want to delete <strong>"{{ category.name }}"</strong>?</p>
-<form method="POST">
-    {% csrf_token %}
-    <button type="submit" style="background: red; color: white;">Yes, Delete Permanently</button>
-    <a href="{% url 'category_list' %}">Cancel</a>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackForge | Delete Category</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Reusing TrackForge Core Design Tokens */
+        :root {
+            --primary: #273c75;
+            --secondary: #40739e;
+            --bg: #f5f6fa;
+            --text: #2f3640;
+            --white: #ffffff;
+            --red: #e84118;
+            --dark-red: #c23616;
+            --light-gray: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styling - Global TrackForge Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: #dcdde1;
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            margin-left: 300px;
+            padding: 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* This centers the card horizontally in the content area */
+        }
+
+        .header-section {
+            width: 100%; /* Ensures header spans the full content width */
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            box-sizing: border-box;
+        }
+
+        /* Danger Card Container */
+        .danger-card {
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            max-width: 550px;
+            width: 100%;
+            border-top: 5px solid var(--red);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .danger-icon {
+            color: var(--red);
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .danger-card h2 {
+            margin-top: 0;
+            color: var(--text);
+            font-size: 1.6rem;
+        }
+
+        .warning-text {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn-delete {
+            background-color: var(--red);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-delete:hover {
+            background-color: var(--dark-red);
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background-color: var(--light-gray);
+            color: var(--text);
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background-color: #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>TRACKFORGE</h2>
+        <a href="/">🏠 Dashboard</a>
+        <a href="{% url 'user_list' %}">👥 Users</a>
+        <a href="{% url 'product_list' %}">📦 Products</a>
+        <a href="{% url 'category_list' %}" class="active">📁 Categories</a>
+        <a href="{% url 'supplier_list' %}">🚚 Suppliers</a>
+        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
+        <a href="{% url 'purchaseorder_list' %}">🧾 PO Management</a>
+        <a href="{% url 'stock_list' %}">📊 Live Stock</a>
+        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Catalog Safety</h1>
+        </div>
+
+        <div class="danger-card">
+            <div class="danger-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2>Confirm Deletion</h2>
+            <p class="warning-text">
+                Are you sure you want to delete category: <br>
+                <strong style="color: var(--text);">"{{ category.name }}"</strong>?
+            </p>
+
+            <div class="btn-group">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">
+                        <i class="fas fa-trash-alt"></i> Yes, Delete Permanently
+                    </button>
+                </form>
+                <a href="{% url 'category_list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
