@@ -13,4 +13,9 @@ urlpatterns = [
     path('add_purchaseorder/', views.add_po, name='add_purchsalorder'),
     path('purchaseorder/<int:pk>/', views.po_detail, name='po_detail'),
 
+    path('purchaseorder/<int:pk>/update-status/', views.update_po_status, name='update_po_status'),
+    # path('purchaseorder/<int:pk>/submit/', views.submit_po, name='submit_po'),
+    # path('purchaseorder/<int:pk>/receive/', views.receive_po, name='receive_po'),
+    # path('purchaseorder/<int:pk>/cancel/', views.cancel_po, name='cancel_po'),
+
 ]
