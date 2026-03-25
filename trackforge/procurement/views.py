@@ -55,7 +55,7 @@ def purchaseorder_list(request):
 
     stats = {
         'total': orders.count(),
-        'pending': orders.filter(status__in=['draft', 'submitted']).count(),
+        'pending': orders.filter(status__in=['draft', 'submitted', 'partial']).count(),
         'received': orders.filter(status='completed').count(),
         'cancelled': orders.filter(status='cancelled').count(),
     }
@@ -64,7 +64,6 @@ def purchaseorder_list(request):
         'orders': orders,
         'stats': stats
     })
-
 
 def po_detail(request, pk):
     order = get_object_or_404(PurchaseOrder, pk=pk)
@@ -101,3 +100,38 @@ def add_po(request):
         "po_form": po_form,
         "formset": formset
     })
+def update_po_status(request, pk):
+    if request.method == 'POST':
+        order = get_object_or_404(PurchaseOrder, pk=pk)
+        new_status = request.POST.get('status')
+
+        if new_status:
+            order.status = new_status
+            order.save()
+
+    return redirect('purchaseorder_list')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
