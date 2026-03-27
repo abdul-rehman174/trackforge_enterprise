@@ -1,38 +1,221 @@
-<div class="container">
-    <h2>Live Stock Inventory</h2>
-    <p>Current balance across all warehouses.</p>
-    <hr>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackForge | Live Stock Inventory</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Reusing TrackForge Core Design Tokens */
+        :root {
+            --primary: #273c75;
+            --secondary: #40739e;
+            --bg: #f5f6fa;
+            --text: #2f3640;
+            --white: #ffffff;
+            --green: #44bd32;
+            --red: #e84118;
+            --orange: #e67e22;
+            --light-gray: #dcdde1;
+        }
 
-    <table border="1" width="100%" cellpadding="10" style="border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #f8f9fa;">
-                <th>Product SKU</th>
-                <th>Product Name</th>
-                <th>Warehouse</th>
-                <th>Current Quantity</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for s in stock %}
-            <tr>
-                <td><code>{{ s.product.sku }}</code></td>
-                <td>{{ s.product.name }}</td>
-                <td>{{ s.warehouse.name }} ({{ s.warehouse.code }})</td>
-                <td><strong>{{ s.quantity }}</strong></td>
-                <td>
-                    {% if s.quantity > 0 %}
-                        <span style="color: green;">In Stock</span>
-                    {% else %}
-                        <span style="color: red;">Out of Stock</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" style="text-align: center;">No stock records found. Receive a Purchase Order to begin.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styling - Global TrackForge Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: #dcdde1;
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        /* Main Content Layout - Matches User/Product List */
+        .main-content {
+            margin-left: 300px;
+            padding: 40px;
+            flex: 1;
+        }
+
+        /* Header Section */
+        .header-section {
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Table Card Container */
+        .table-container {
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-top: 5px solid var(--primary); /* Distinct color for Stock */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 18px;
+            text-align: left;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        td {
+            padding: 18px;
+            border-bottom: 1px solid #edf2f7;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: #e3f9e5; color: var(--green); }
+        .badge-danger { background: #ffebee; color: var(--red); }
+        .badge-warning { background: #fff3e0; color: var(--orange); }
+
+        code {
+            background: #f1f2f6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .no-data {
+            padding: 60px;
+            text-align: center;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>TRACKFORGE</h2>
+        <a href="/">🏠 Dashboard</a>
+        <a href="{% url 'user_list' %}">👥 Users</a>
+        <a href="{% url 'product_list' %}">📦 Products</a>
+        <a href="{% url 'category_list' %}">📁 Categories</a>
+        <a href="{% url 'supplier_list' %}">🚚 Suppliers</a>
+        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
+        <a href="{% url 'purchaseorder_list' %}">🧾 PO Management</a>
+        <a href="{% url 'stock_list' %}" class="active">📊 Live Stock</a>
+        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div style="flex: 1;">
+                <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Live Stock Inventory</h1>
+                <p style="margin: 5px 0 0; color: #7f8c8d; font-size: 0.9rem;">Real-time balance across all warehouse locations.</p>
+            </div>
+            <a href="{% url 'purchaseorder_list' %}" style="background: var(--primary); color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold;">
+                <i class="fas fa-plus"></i> Restock via PO
+            </a>
+        </div>
+
+        <div class="table-container">
+            {% if stock %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product SKU</th>
+                        <th>Product Name</th>
+                        <th>Warehouse</th>
+                        <th>Current Quantity</th>
+                        <th style="text-align: center;">Availability Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in stock %}
+                    <tr>
+                        <td><code>{{ s.product.sku }}</code></td>
+                        <td><strong>{{ s.product.name }}</strong></td>
+                        <td>
+                            <i class="fas fa-warehouse" style="color: #ccc; margin-right: 5px;"></i>
+                            {{ s.warehouse.name }} ({{ s.warehouse.code }})
+                        </td>
+                        <td>
+                            <span style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">
+                                {{ s.quantity }}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            {% if s.quantity > 10 %}
+                                <span class="badge badge-success"><i class="fas fa-check-circle"></i> In Stock</span>
+                            {% elif s.quantity > 0 %}
+                                <span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock</span>
+                            {% else %}
+                                <span class="badge badge-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-boxes fa-4x" style="display:block; margin-bottom:20px; opacity:0.2;"></i>
+                <p style="font-size: 1.1rem; font-weight: 600;">No stock records found.</p>
+                <p style="color: #95a5a6;">Receive a <a href="{% url 'purchaseorder_list' %}">Purchase Order</a> to begin tracking inventory.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>
