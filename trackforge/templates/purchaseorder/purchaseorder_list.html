@@ -2,62 +2,255 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrackForge | Purchase Order Management</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --bg: #f4f7f6; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; }
-        .sidebar { width: 260px; height: 100vh; background: var(--primary); color: white; position: fixed; padding: 20px; box-sizing: border-box; }
-        .sidebar h2 { font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
-        .sidebar a { display: block; color: #bdc3c7; text-decoration: none; padding: 12px; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
-        .sidebar a.active, .sidebar a:hover { background: rgba(255,255,255,0.1); color: white; }
-        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 40px; box-sizing: border-box; }
+        /* Reusing TrackForge Core Design Tokens */
+        :root {
+            --primary: #273c75;
+            --secondary: #40739e;
+            --bg: #f5f6fa;
+            --text: #2f3640;
+            --white: #ffffff;
+            --green: #44bd32;
+            --red: #e84118;
+            --orange: #e67e22;
+            --light-gray: #dcdde1;
+            --accent: #3498db;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styling - Global TrackForge Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
+            z-index: 100;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: #dcdde1;
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            margin-left: 300px;
+            padding: 40px;
+            flex: 1;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
 
         /* Stats Ribbon */
-        .stats-ribbon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid var(--accent); }
-        .stat-card small { color: #7f8c8d; font-weight: bold; text-transform: uppercase; font-size: 11px; }
-        .stat-card h3 { margin: 5px 0 0; font-size: 24px; color: var(--primary); }
+        .stats-ribbon {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-        /* Content Table */
-        .audit-container { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
-        .audit-header { padding: 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .pro-table { width: 100%; border-collapse: collapse; }
-        .pro-table th { background: #f8f9fa; padding: 15px 25px; text-align: left; color: #7f8c8d; font-size: 12px; text-transform: uppercase; }
-        .pro-table td { padding: 18px 25px; border-bottom: 1px solid #f1f2f6; font-size: 14px; }
+        .stat-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--accent);
+        }
+
+        .stat-card small {
+            color: #7f8c8d;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        /* Table Card Container */
+        .table-container {
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-top: 5px solid var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            padding: 18px;
+            text-align: left;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        td {
+            padding: 18px;
+            border-bottom: 1px solid #edf2f7;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: #f9fbff;
+        }
 
         /* Status Badges */
-        .badge { padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 11px; text-transform: uppercase; }
-        .bg-draft { background: #eee; color: #777; }
-        .bg-completed { background: #e8f5e9; color: var(--success); }
-        .bg-partial { background: #fff8e1; color: var(--warning); }
-        .bg-cancelled { background: #ffebee; color: var(--danger); }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            display: inline-block;
+        }
 
-        .btn-manage { color: var(--accent); text-decoration: none; font-weight: bold; border: 1px solid var(--accent); padding: 6px 15px; border-radius: 6px; transition: 0.3s; }
-        .btn-manage:hover { background: var(--accent); color: white; }
+        .bg-draft { background: #f1f2f6; color: #7f8c8d; }
+        .bg-completed { background: #e3f9e5; color: var(--green); }
+        .bg-partial { background: #fff3e0; color: var(--orange); }
+        .bg-cancelled { background: #ffebee; color: var(--red); }
+
+        /* Action Buttons */
+        .btn-manage {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--secondary);
+            padding: 6px 15px;
+            border-radius: 6px;
+            transition: 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .btn-manage:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-add {
+            background-color: var(--green);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-add:hover {
+            filter: brightness(0.9);
+            transform: translateY(-1px);
+        }
+
+        .no-data {
+            padding: 60px;
+            text-align: center;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Sidebar -->
     <div class="sidebar">
         <h2>TRACKFORGE</h2>
-        <a href="{% url 'purchaseorder_list' %}" class="active"><i class="fas fa-file-invoice"></i> Purchase Orders</a>
-        <a href="{% url 'transaction_history' %}"><i class="fas fa-history"></i> Audit Trail</a>
+        <a href="/">🏠 Dashboard</a>
+        <a href="{% url 'user_list' %}">👥 Users</a>
+        <a href="{% url 'product_list' %}">📦 Products</a>
+        <a href="{% url 'category_list' %}">📁 Categories</a>
+        <a href="{% url 'supplier_list' %}">🚚 Suppliers</a>
+        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
+        <a href="{% url 'purchaseorder_list' %}">🧾 PO Management</a>
+        <a href="{% url 'stock_list' %}">📊 Live Stock</a>
+        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
     </div>
 
     <div class="main-content">
+        <!-- Stats Ribbon -->
         <div class="stats-ribbon">
-            <div class="stat-card"><small>Total Orders</small><h3>{{ stats.total }}</h3></div>
-            <div class="stat-card" style="border-color: var(--warning);"><small>Pending</small><h3>{{ stats.pending }}</h3></div>
-            <div class="stat-card" style="border-color: var(--success);"><small>Received</small><h3>{{ stats.received }}</h3></div>
-            <div class="stat-card" style="border-color: var(--danger);"><small>Cancelled</small><h3>{{ stats.cancelled }}</h3></div>
+            <div class="stat-card">
+                <small>Total Orders</small>
+                <h3>{{ stats.total|default:"0" }}</h3>
+            </div>
+            <div class="stat-card" style="border-color: var(--orange);">
+                <small>Pending / Partial</small>
+                <h3>{{ stats.pending|default:"0" }}</h3>
+            </div>
+            <div class="stat-card" style="border-color: var(--green);">
+                <small>Completed</small>
+                <h3>{{ stats.received|default:"0" }}</h3>
+            </div>
+            <div class="stat-card" style="border-color: var(--red);">
+                <small>Cancelled</small>
+                <h3>{{ stats.cancelled|default:"0" }}</h3>
+            </div>
         </div>
 
-        <div class="audit-container">
-            <div class="audit-header">
-                <h1>Purchase Order Management</h1>
-                <a href="{% url 'add_purchsalorder' %}" style="background: var(--success); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">+ New Purchase Order</a>
-            </div>
-            <table class="pro-table">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Purchase Order Management</h1>
+            <a href="{% url 'add_purchsalorder' %}" class="btn-add">
+                <i class="fas fa-plus"></i> New Purchase Order
+            </a>
+        </div>
+
+        <!-- Table Card Container -->
+        <div class="table-container">
+            {% if orders %}
+            <table>
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -65,23 +258,44 @@
                         <th>Supplier</th>
                         <th>Warehouse</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th style="text-align: center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for po in orders %}
                     <tr>
-                        <td style="color: #7f8c8d;">{{ po.order_date|date:"M d, Y" }}</td>
+                        <td style="color: #7f8c8d; font-size: 0.85rem;">
+                            <i class="far fa-calendar-alt"></i> {{ po.order_date|date:"M d, Y" }}
+                        </td>
                         <td><strong>{{ po.reference_number }}</strong></td>
                         <td>{{ po.supplier.name }}</td>
-                        <td><i class="fas fa-warehouse" style="color:#ccc"></i> {{ po.warehouse.code }}</td>
-                        <td><span class="badge bg-{{ po.status }}">{{ po.get_status_display }}</span></td>
-                        <td><a href="{% url 'po_detail' po.pk %}" class="btn-manage">Manage</a></td>
+                        <td>
+                            <i class="fas fa-warehouse" style="color:#ccc; margin-right: 5px;"></i>
+                            {{ po.warehouse.code }}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ po.status }}">
+                                {{ po.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <a href="{% url 'po_detail' po.pk %}" class="btn-manage">
+                                Manage
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-file-invoice fa-4x" style="display:block; margin-bottom:20px; opacity:0.1;"></i>
+                <p style="font-size: 1.1rem; font-weight: 600;">No purchase orders found.</p>
+                <p>Create your first order to start receiving inventory.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
+
 </body>
 </html>
