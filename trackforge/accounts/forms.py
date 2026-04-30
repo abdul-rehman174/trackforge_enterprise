@@ -16,6 +16,11 @@ class SignupForm(UserCreationForm):
         model = CustomUser
         fields = ["username", "email", "first_name", "last_name"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in self.fields.values():
+            f.help_text = ""
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
