@@ -1,69 +1,79 @@
+from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.shortcuts import render,redirect,HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .forms import CustomUserForm, SignupForm
 from .models import CustomUser
-from .forms import CustomUserForm
-from inventory.models import Product
-# from warehouses.models import Warehouse
-# from procurement.models import Supplier, PurchaseOrder
-from django.contrib import auth
 
 
-# Create your views here.
 def register_user(request):
+    """Public self-signup. Authenticated admins can also use this to create
+    plain users; for elevated roles they should use the Django admin."""
     if request.method == "POST":
-        form = CustomUserForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data["password"])
-            user.save()
+            user = form.save()
+            messages.success(request, f"Account created for {user.username}. Please sign in.")
             return redirect("login")
     else:
-        form = CustomUserForm()
-    return render(request,"accounts/register_user.html",{"form":form ,"button_label":"Register"})
+        form = SignupForm()
+    return render(request, "accounts/register_user.html", {
+        "form": form,
+        "button_label": "Create Account",
+        "is_signup": True,
+    })
 
 
 def login(request):
+    if request.user.is_authenticated:
+        return redirect("/")
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = auth.authenticate(request,username=username,password=password)
+        username = (request.POST.get("username") or "").strip()
+        password = request.POST.get("password") or ""
+        user = auth.authenticate(request, username=username, password=password)
         if user:
-            auth.login(request,user)
-            return redirect('/')
+            auth.login(request, user)
+            return redirect("/")
+        messages.error(request, "Invalid username or password.")
+    return render(request, "login.html")
 
-    return render(request,"login.html")
 
 def logout(request):
     auth.logout(request)
-    return redirect('/')
+    return redirect("login")
+
 
 @login_required
 def user_list(request):
-    users = CustomUser.objects.all()
-    return render(request,"accounts/user_list.html",{"users":users})
+    users = CustomUser.objects.all().order_by("id")
+    return render(request, "accounts/user_list.html", {"users": users})
 
 
-@permission_required('accounts.change_customuser',raise_exception=True)
-def update_user(request,pk):
-    user = CustomUser.objects.get(pk=pk)
+@login_required
+@permission_required("accounts.change_customuser", raise_exception=True)
+def update_user(request, pk):
+    user = get_object_or_404(CustomUser, pk=pk)
     if request.method == "POST":
-        form = CustomUserForm(request.POST,instance = user)
+        form = CustomUserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
+            messages.success(request, f"User '{user.username}' updated.")
             return redirect("user_list")
     else:
-        form = CustomUserForm(instance = user)
-        return render(request,"accounts/register_user.html",{"form":form, "button_label":"Update"})
+        form = CustomUserForm(instance=user)
+    return render(request, "accounts/register_user.html", {
+        "form": form,
+        "button_label": "Update User",
+        "is_signup": False,
+    })
 
 
-@permission_required('accounts.delete_customuser',raise_exception=True)
+@login_required
+@permission_required("accounts.delete_customuser", raise_exception=True)
 def delete_user(request, pk):
-    user = CustomUser.objects.get(pk=pk)
-
+    user = get_object_or_404(CustomUser, pk=pk)
     if request.method == "POST":
         user.delete()
+        messages.success(request, "User deleted.")
         return redirect("user_list")
-    else:
-        return render(request,"accounts/delete_user.html",{"user":user})
-
-
+    return render(request, "accounts/delete_user.html", {"user": user})

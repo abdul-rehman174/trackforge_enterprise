@@ -1,203 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrackForge | {% if form.instance.pk %}Update{% else %}Add{% endif %} Supplier</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Reusing TrackForge Core Design Tokens */
-        :root {
-            --primary: #273c75;
-            --secondary: #40739e;
-            --bg: #f5f6fa;
-            --text: #2f3640;
-            --white: #ffffff;
-            --green: #44bd32;
-            --light-gray: #dcdde1;
-        }
+{% extends "base.html" %}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-        }
+{% block title %}TrackForge | {% if form.instance.pk %}Update{% else %}Add{% endif %} Supplier{% endblock %}
+{% block main_class %}centered{% endblock %}
+{% block page_title %}Supplier Management{% endblock %}
 
-        /* Sidebar Styling */
-        .sidebar {
-            width: 260px;
-            background-color: var(--primary);
-            color: var(--white);
-            min-height: 100vh;
-            padding: 20px;
-            position: fixed;
-        }
+{% block content %}
+<div class="form-card card-accent-green">
+    <h2>
+        <i class="fas fa-truck"></i>
+        {% if form.instance.pk %}Update Supplier{% else %}Add New Supplier{% endif %}
+    </h2>
 
-        .sidebar h2 {
-            font-size: 1.5rem;
-            margin-bottom: 30px;
-            text-align: center;
-            letter-spacing: 1px;
-        }
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success btn-block btn-lg">
+            <i class="fas fa-save"></i>
+            {% if form.instance.pk %}Update{% else %}Add{% endif %} Supplier
+        </button>
+    </form>
 
-        .sidebar a {
-            color: #dcdde1;
-            text-decoration: none;
-            display: block;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover, .sidebar a.active {
-            background-color: var(--secondary);
-            color: white;
-        }
-
-        /* Main Content Layout - CENTERED LOGIC */
-        .main-content {
-            margin-left: 260px;
-            padding: 40px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Horizontally centers the card */
-            min-height: 100vh;
-        }
-
-        .header-section {
-            width: 100%; /* Stretches header back to full width */
-            box-sizing: border-box;
-            background: var(--white);
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-
-        /* Form Card Container - CENTERED WIDTH */
-        .form-card {
-            width: 100%;
-            background-color: var(--white);
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            max-width: 600px;
-            border-top: 5px solid var(--green); /* Green accent for Suppliers */
-        }
-
-        .form-card h2 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.4rem;
-            margin-bottom: 25px;
-        }
-
-        /* Styling Django Form fields */
-        form p {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--light-gray);
-            font-size: 0.95rem;
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(64, 115, 158, 0.1);
-        }
-
-        .btn-save {
-            background-color: var(--green);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-        }
-
-        .btn-save:hover {
-            filter: brightness(0.9);
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: var(--secondary);
-            font-weight: 600;
-        }
-
-        /* Hide Django default help text */
-        .helptext {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="sidebar">
-        <h2>TRACKFORGE</h2>
-        <a href="/">🏠 Dashboard</a>
-        <a href="{% url 'user_list' %}">👥 Users</a>
-        <a href="{% url 'product_list' %}">📦 Products</a>
-        <a href="{% url 'category_list' %}">📁 Categories</a>
-        <a href="{% url 'supplier_list' %}" class="active">🚚 Suppliers</a>
-        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
-        <a href="{% url 'purchaseorder_list' %}">🧾 PO Management</a>
-        <a href="{% url 'stock_list' %}">📊 Live Stock</a>
-        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Supplier Management</h1>
-        </div>
-
-        <div class="form-card">
-            <h2>
-                <i class="fas fa-truck"></i>
-                {% if form.instance.pk %}Update Supplier{% else %}Add New Supplier{% endif %}
-            </h2>
-
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn-save">
-                    <i class="fas fa-save"></i>
-                    {% if form.instance.pk %}Update{% else %}Add{% endif %} Supplier
-                </button>
-            </form>
-
-            <a href="{% url 'supplier_list' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back to Supplier List
-            </a>
-        </div>
-    </div>
-
-</body>
-</html>
+    <a href="{% url 'supplier_list' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Supplier List
+    </a>
+</div>
+{% endblock %}

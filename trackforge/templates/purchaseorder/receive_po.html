@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}TrackForge | Receive {{ order.reference_number }}{% endblock %}
+{% block main_class %}centered{% endblock %}
+{% block page_title %}<i class="fas fa-truck-loading"></i> Receive Order{% endblock %}
+{% block page_subtitle %}
+<span class="subtitle">
+    <strong>{{ order.reference_number }}</strong> · {{ order.supplier.name }} · {{ order.warehouse.name }} ({{ order.warehouse.code }})
+</span>
+{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'po_detail' order.pk %}" class="btn btn-ghost">
+    <i class="fas fa-arrow-left"></i> Back to order
+</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .receive-card { width: 100%; max-width: 1100px; }
+    .receive-table { width: 100%; border-collapse: collapse; }
+    .receive-table th {
+        text-align: left; padding: 14px 20px; background: #fafbfd;
+        color: var(--primary); font-size: 0.74rem; text-transform: uppercase;
+        letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
+    }
+    .receive-table td { padding: 16px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .receive-table tr:last-child td { border-bottom: none; }
+    .product-cell strong { color: var(--text); }
+    .product-cell .sku { display: block; color: var(--muted); font-size: 0.78rem; font-family: monospace; margin-top: 2px; }
+    .qty-pill {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 60px; padding: 5px 12px; border-radius: 20px;
+        font-weight: 700; font-size: 0.92rem; background: var(--soft); color: var(--text);
+    }
+    .qty-pill.received { background: var(--green-bg); color: var(--green); }
+    .qty-pill.outstanding { background: var(--orange-bg); color: var(--orange); }
+    .qty-pill.done { background: #eef3fb; color: var(--primary); }
+    .receive-input {
+        width: 110px; padding: 10px 12px; border-radius: 8px;
+        border: 2px solid var(--green); font-size: 1rem; font-weight: 700;
+        text-align: center; transition: 0.2s; box-sizing: border-box;
+    }
+    .receive-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(68,189,50,0.15); }
+    .receive-input:disabled { background: var(--soft); border-color: var(--light-gray); color: var(--muted); }
+    .progress-bar {
+        width: 120px; height: 8px; background: var(--soft); border-radius: 5px; overflow: hidden;
+    }
+    .progress-bar .fill { height: 100%; background: var(--green); transition: width 0.3s; }
+    .quick-fill-btn {
+        background: none; border: none; color: var(--secondary);
+        font-size: 0.74rem; font-weight: 700; cursor: pointer; margin-left: 6px;
+    }
+    .quick-fill-btn:hover { text-decoration: underline; }
+    .footer-actions {
+        padding: 22px 25px; background: #fafbfd; border-top: 1px solid var(--border);
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="info-banner" style="width:100%; max-width:1100px;">
+    <i class="fas fa-info-circle fa-lg"></i>
+    <div>
+        Enter how much arrived in <em>this delivery</em> for each line. Stock will be added automatically.
+        If everything has arrived, the order will be marked Completed; otherwise it stays Partial until the rest arrives.
+    </div>
+</div>
+
+<form method="POST" class="card card-accent-green receive-card">
+    {% csrf_token %}
+    <table class="receive-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th class="text-center">Ordered</th>
+                <th class="text-center">Already Received</th>
+                <th class="text-center">Outstanding</th>
+                <th>Progress</th>
+                <th class="text-right">Receive Now</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="product-cell">
+                    <strong>{{ item.product.name }}</strong>
+                    <span class="sku">{{ item.product.sku }}</span>
+                </td>
+                <td class="text-center">
+                    <span class="qty-pill">{{ item.quantity }}</span>
+                </td>
+                <td class="text-center">
+                    <span class="qty-pill received">{{ item.quantity_received }}</span>
+                </td>
+                <td class="text-center">
+                    {% if item.outstanding > 0 %}
+                        <span class="qty-pill outstanding">{{ item.outstanding }}</span>
+                    {% else %}
+                        <span class="qty-pill done"><i class="fas fa-check"></i> Done</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="progress-bar" title="{{ item.quantity_received }} of {{ item.quantity }}">
+                        <div class="fill" style="width: {% widthratio item.quantity_received item.quantity 100 %}%;"></div>
+                    </div>
+                </td>
+                <td class="text-right">
+                    {% if item.outstanding > 0 %}
+                        <input
+                            type="number" min="0" max="{{ item.outstanding }}" step="0.01"
+                            name="receive_{{ item.pk }}" value="0"
+                            class="receive-input"
+                            data-max="{{ item.outstanding }}"
+                        >
+                        <button type="button" class="quick-fill-btn" onclick="this.previousElementSibling.value=this.previousElementSibling.dataset.max">All</button>
+                    {% else %}
+                        <input type="number" value="0" class="receive-input" disabled>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer-actions">
+        <a href="{% url 'po_detail' order.pk %}" class="btn btn-ghost">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+        <button type="submit" class="btn btn-success btn-lg">
+            <i class="fas fa-box-open"></i> Confirm Receipt &amp; Update Stock
+        </button>
+    </div>
+</form>
+{% endblock %}

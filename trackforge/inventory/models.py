@@ -46,8 +46,8 @@ class Stock(AuditableModel):
     The 'Live' view of inventory.
     Use this to check 'Do we have enough?'
     """
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='stock_levels')
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='stock_levels')
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='stock_levels')
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT, related_name='stock_levels')
     quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
@@ -63,13 +63,18 @@ class StockTransaction(AuditableModel):
     The 'History' view.
     Every time stock changes, a record MUST be created here.
     """
-    TX_TYPES =[
+    TX_TYPES = [
         ('po_complete', 'PO Complete'),
         ('po_partial', 'PO Partial'),
         ('po_cancel', 'PO Cancelled'),
+        ('adjustment', 'Manual Adjustment'),
+        ('transfer_in', 'Transfer In'),
+        ('transfer_out', 'Transfer Out'),
+        ('sale', 'Sale'),
+        ('return', 'Return'),
     ]
 
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='transactions')
+    stock = models.ForeignKey(Stock, on_delete=models.PROTECT, related_name='transactions')
     transaction_type = models.CharField(max_length=100, choices=TX_TYPES)
 
     quantity_changed = models.DecimalField(max_digits=12, decimal_places=2,

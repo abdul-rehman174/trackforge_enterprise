@@ -1,6 +1,8 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
 # Virtual envs
 .env
@@ -11,15 +13,21 @@ enterprise_env/
 
 # Django
 *.sqlite3
+db.sqlite3-journal
 media/
+# Collected static output (NOT the source CSS under trackforge/static/)
+trackforge/staticfiles/
 staticfiles/
-static/
+
+# Logs
+*.log
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
-

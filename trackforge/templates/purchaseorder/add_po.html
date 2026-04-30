@@ -1,351 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrackForge | {% if po_form.instance.pk %}Update{% else %}Create{% endif %} Purchase Order</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Reusing TrackForge Core Design Tokens */
-        :root {
-            --primary: #273c75;
-            --secondary: #40739e;
-            --bg: #f5f6fa;
-            --text: #2f3640;
-            --white: #ffffff;
-            --green: #44bd32;
-            --red: #e84118;
-            --light-gray: #dcdde1;
-        }
+{% extends "base.html" %}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-        }
+{% block title %}TrackForge | {% if is_create %}New{% else %}Edit{% endif %} Purchase Order{% endblock %}
+{% block main_class %}centered{% endblock %}
+{% block page_title %}
+    <i class="fas fa-file-invoice"></i>
+    {% if is_create %}New Purchase Order{% else %}Edit Order #{{ po_form.instance.reference_number }}{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+<span class="subtitle">
+    {% if is_create %}
+        Pick a supplier, add line items — we'll save it as a draft.
+    {% else %}
+        Editing is allowed only while the order is Draft or Submitted.
+    {% endif %}
+</span>
+{% endblock %}
 
-        /* Sidebar Styling - Global TrackForge Sidebar */
-        .sidebar {
-            width: 260px;
-            background-color: var(--primary);
-            color: var(--white);
-            min-height: 100vh;
-            padding: 20px;
-            position: fixed;
-            z-index: 100;
-        }
+{% block header_actions %}
+<a href="{% url 'purchaseorder_list' %}" class="btn btn-ghost">
+    <i class="fas fa-arrow-left"></i> Back to list
+</a>
+{% endblock %}
 
-        .sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; text-align: center; letter-spacing: 1px; }
+{% block extra_head %}
+<style>
+    .section-title {
+        color: var(--primary); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.6px;
+        margin: 0 0 16px 0; font-weight: 700;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .num {
+        background: var(--primary); color: white; width: 24px; height: 24px;
+        border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+        font-size: 0.75rem;
+    }
+    .header-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+        background: #f8f9fa; padding: 22px; border-radius: 10px; margin-bottom: 30px;
+    }
+    .items-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th {
+        text-align: left; padding: 12px 14px; background: #f8f9fa; color: var(--primary);
+        font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
+    }
+    .items-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .items-table tr:last-child td { border-bottom: none; }
+    .items-table input, .items-table select { padding: 9px 10px; font-size: 0.9rem; }
+    .col-qty { width: 110px; }
+    .col-price { width: 140px; }
+    .col-line-total { width: 130px; text-align: right; font-weight: 700; color: var(--primary); }
+    .col-delete { width: 50px; text-align: center; }
+    .btn-add-row {
+        background: var(--white); color: var(--secondary);
+        border: 1.5px dashed var(--secondary); padding: 10px 18px;
+        border-radius: 8px; cursor: pointer; margin-top: 12px;
+        font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-add-row:hover { background: var(--secondary); color: white; }
+    .btn-remove-row { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; }
+    .btn-remove-row:hover { transform: scale(1.15); }
+    .totals-strip {
+        margin-top: 16px; padding: 14px 22px; background: #fafbfd;
+        border-radius: 10px; border: 1px solid var(--border);
+        display: flex; justify-content: flex-end; align-items: center; gap: 28px;
+    }
+    .totals-strip .label { color: var(--muted); font-size: 0.82rem; }
+    .totals-strip .value { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    .form-footer {
+        margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--border);
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    @media (max-width: 720px) {
+        .header-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
 
-        .sidebar a {
-            color: #dcdde1;
-            text-decoration: none;
-            display: block;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: 0.3s;
-        }
+{% block content %}
+<div class="form-card wide">
+    {% if po_form.non_field_errors or formset.non_form_errors %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            Please review the errors below before saving.
+        </div>
+    {% endif %}
 
-        .sidebar a:hover, .sidebar a.active { background-color: var(--secondary); color: white; }
+    <form method="POST" id="po-form">
+        {% csrf_token %}
 
-        /* Main Content Layout */
-        .main-content {
-            margin-left: 300px;
-            padding: 40px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .header-section {
-            width: 100%;
-            box-sizing: border-box;
-            background: var(--white);
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-
-        /* Form Card Container */
-        .form-card {
-            width: 100%;
-            background-color: var(--white);
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            max-width: 1100px;
-            border-top: 5px solid var(--primary);
-        }
-
-        .form-card h2 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.4rem;
-            margin-bottom: 25px;
-        }
-
-        /* PO Header Info Grid (Matches Admin Panel style) */
-        .po-metadata {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 35px;
-            border: 1px solid #eee;
-        }
-
-        .field-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: var(--primary);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--light-gray);
-            font-size: 0.95rem;
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(64, 115, 158, 0.1);
-        }
-
-        /* Items Table with Received Qty */
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .items-table th {
-            text-align: left;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .items-table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-        }
-
-        /* Specific Widths for Inputs */
-        .col-qty { width: 100px; }
-        .col-price { width: 140px; }
-        .col-received { width: 140px; }
-        .col-delete { width: 50px; text-align: center; }
-
-        /* Buttons */
-        .btn-add {
-            background: var(--secondary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn-add:hover { background: var(--primary); }
-
-        .btn-save {
-            background: var(--green);
-            color: white;
-            border: none;
-            padding: 12px 45px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-save:hover { filter: brightness(0.9); transform: translateY(-1px); }
-
-        .form-footer {
-            margin-top: 40px;
-            padding-top: 25px;
-            border-top: 2px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-remove-row {
-            background: none;
-            border: none;
-            color: var(--red);
-            cursor: pointer;
-            font-size: 1.1rem;
-        }
-
-        .hidden { display: none; }
-        .helptext { display: none; }
-
-        /* Styling for the Delete Checkbox in Django formsets */
-        .delete-box {
-            transform: scale(1.2);
-            accent-color: var(--red);
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>TRACKFORGE</h2>
-        <a href="/">🏠 Dashboard</a>
-        <a href="{% url 'user_list' %}">👥 Users</a>
-        <a href="{% url 'product_list' %}">📦 Products</a>
-        <a href="{% url 'category_list' %}">📁 Categories</a>
-        <a href="{% url 'warehouse_list' %}">🏢 Warehouses</a>
-        <a href="{% url 'purchaseorder_list' %}" class="active">🧾 PO Management</a>
-        <a href="{% url 'stock_list' %}">📊 Live Stock</a>
-        <a href="{% url 'transaction_history' %}">📜 Audit Trail</a>
-        <a href="{% url 'supplier_list' %}">🚚 Suppliers</a>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <h1 style="margin:0; font-size: 1.8rem; color: var(--primary);">Procurement Management</h1>
+        <h3 class="section-title"><span class="num">1</span> Order Details</h3>
+        <div class="header-grid">
+            <div class="field-group">
+                <label>Reference Number</label>
+                {{ po_form.reference_number }}
+                {% if po_form.reference_number.errors %}{{ po_form.reference_number.errors }}{% endif %}
+                {% if is_create %}<span class="text-muted" style="font-size:0.75rem; display:block; margin-top:4px;">Leave blank to auto-generate (e.g. PO-2026-0007)</span>{% endif %}
+            </div>
+            <div class="field-group">
+                <label>Supplier</label>
+                {{ po_form.supplier }}
+                {% if po_form.supplier.errors %}{{ po_form.supplier.errors }}{% endif %}
+            </div>
+            <div class="field-group">
+                <label>Deliver To Warehouse</label>
+                {{ po_form.warehouse }}
+                {% if po_form.warehouse.errors %}{{ po_form.warehouse.errors }}{% endif %}
+            </div>
+            {% if not is_create %}
+            <div class="field-group" style="grid-column: 1 / -1;">
+                <label>Status</label>
+                <div style="padding:11px 14px; background:#eef3fb; border-radius:8px; color:var(--primary); font-weight:700;">
+                    {{ po_form.instance.get_status_display }}
+                    <span class="text-muted" style="font-weight:400; font-size:0.82rem; margin-left:10px;">
+                        <i class="fas fa-info-circle"></i> Use the buttons on the order detail page to change status.
+                    </span>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
-        <div class="form-card">
-            <h2>
-                <i class="fas fa-file-invoice"></i>
-                {% if po_form.instance.pk %}Update Order #{{ po_form.instance.reference_number }}{% else %}Create Purchase Order{% endif %}
-            </h2>
+        <h3 class="section-title"><span class="num">2</span> Line Items</h3>
+        {{ formset.management_form }}
 
-            <form method="POST">
-                {% csrf_token %}
-
-                <!-- PO Header Info (Grid Layout matching your Admin Screenshot) -->
-                <div class="po-metadata">
-                    <div class="field-group">
-                        <label>Reference number:</label>
-                        {{ po_form.reference_number }}
-                    </div>
-                    <div class="field-group">
-                        <label>Supplier:</label>
-                        {{ po_form.supplier }}
-                    </div>
-                    <div class="field-group">
-                        <label>Warehouse:</label>
-                        {{ po_form.warehouse }}
-                    </div>
-                    <div class="field-group">
-                        <label>Status:</label>
-                        {{ po_form.status }}
-                    </div>
-                </div>
-
-                <!-- Line Items Section (Tabular Inline) -->
-                <h3 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px;">PO Line Items</h3>
-                {{ formset.management_form }}
-
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th class="col-qty">Quantity</th>
-                            <th class="col-price">Unit Price</th>
-                            <th class="col-received">Qty Received</th>
-                            <th class="col-delete">Delete?</th>
-                        </tr>
-                    </thead>
-                    <tbody id="item-tbody">
-                        {% for form in formset %}
-                        <tr class="item-row">
-                            {{ form.id }}
-                            <td>{{ form.product }}</td>
-                            <td>{{ form.quantity }}</td>
-                            <td>{{ form.unit_price }}</td>
-                            <td>{{ form.quantity_received }}</td>
-                            <td class="col-delete">
-                                {% if formset.can_delete %}
+        <div class="items-card">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="col-qty">Quantity</th>
+                        <th class="col-price">Unit Price</th>
+                        {% if not is_create %}<th class="col-qty">Received</th>{% endif %}
+                        <th class="col-line-total">Line Total</th>
+                        <th class="col-delete"></th>
+                    </tr>
+                </thead>
+                <tbody id="item-tbody">
+                    {% for form in formset %}
+                    <tr class="item-row">
+                        {{ form.id }}
+                        <td>{{ form.product }}</td>
+                        <td>{{ form.quantity }}</td>
+                        <td>{{ form.unit_price }}</td>
+                        {% if not is_create %}<td>{{ form.quantity_received }}</td>{% endif %}
+                        <td class="col-line-total"><span class="line-total">$0.00</span></td>
+                        <td class="col-delete">
+                            {% if form.instance.pk %}
+                                <label style="cursor:pointer;" title="Mark for deletion">
                                     {{ form.DELETE }}
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                <button type="button" class="btn-add" id="add-item-btn">
-                    <i class="fas fa-plus-circle"></i> Add Another Line Item
-                </button>
-
-                <div class="form-footer">
-                    <a href="{% url 'purchaseorder_list' %}" style="text-decoration:none; color:var(--secondary); font-weight:600;">
-                        <i class="fas fa-arrow-left"></i> Discard and Return
-                    </a>
-                    <button type="submit" class="btn-save">
-                        <i class="fas fa-check-double"></i> Save Purchase Order
-                    </button>
-                </div>
-            </form>
+                                </label>
+                            {% else %}
+                                <button type="button" class="btn-remove-row" onclick="removeRow(this)" title="Remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </div>
 
-    <!-- Hidden Template for Dynamic JS Rows -->
-    <table class="hidden">
-        <tbody id="empty-row-template">
-            <tr>
-                <td>{{ formset.empty_form.product }}</td>
-                <td>{{ formset.empty_form.quantity }}</td>
-                <td>{{ formset.empty_form.unit_price }}</td>
-                <td>{{ formset.empty_form.quantity_received }}</td>
-                <td class="col-delete">
-                    <button type="button" class="btn-remove-row" onclick="this.closest('tr').remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+        <button type="button" class="btn-add-row" id="add-item-btn">
+            <i class="fas fa-plus"></i> Add another line item
+        </button>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addBtn = document.getElementById('add-item-btn');
-            const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+        <div class="totals-strip">
+            <span class="label">Grand Total</span>
+            <span class="value" id="grand-total">$0.00</span>
+        </div>
 
-            addBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const tbody = document.getElementById('item-tbody');
-                const templateHtml = document.getElementById('empty-row-template').innerHTML;
+        <div class="form-footer">
+            <a href="{% url 'purchaseorder_list' %}" class="btn btn-ghost">
+                <i class="fas fa-times"></i> Discard
+            </a>
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-check"></i>
+                {% if is_create %}Create Draft Order{% else %}Save Changes{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
 
-                if (totalForms && tbody) {
-                    const currentCount = parseInt(totalForms.value);
-                    const newRow = templateHtml.replace(/__prefix__/g, currentCount);
-                    tbody.insertAdjacentHTML('beforeend', newRow);
-                    totalForms.value = currentCount + 1;
-                }
+<table style="display:none;">
+    <tbody id="empty-row-template">
+        <tr class="item-row">
+            <td>{{ formset.empty_form.product }}</td>
+            <td>{{ formset.empty_form.quantity }}</td>
+            <td>{{ formset.empty_form.unit_price }}</td>
+            {% if not is_create %}<td>{{ formset.empty_form.quantity_received }}</td>{% endif %}
+            <td class="col-line-total"><span class="line-total">$0.00</span></td>
+            <td class="col-delete">
+                <button type="button" class="btn-remove-row" onclick="removeRow(this)" title="Remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const initialForms = document.querySelector('input[name$="-INITIAL_FORMS"]');
+    const tbody = document.getElementById('item-tbody');
+    const initialCount = initialForms ? (parseInt(initialForms.value) || 0) : 0;
+
+    function recalc() {
+        let grand = 0;
+        document.querySelectorAll('#item-tbody .item-row').forEach(row => {
+            const qty = parseFloat(row.querySelector('input[name$="-quantity"]')?.value || 0);
+            const price = parseFloat(row.querySelector('input[name$="-unit_price"]')?.value || 0);
+            const lineTotal = (isFinite(qty) && isFinite(price)) ? qty * price : 0;
+            const cell = row.querySelector('.line-total');
+            if (cell) cell.textContent = '$' + lineTotal.toFixed(2);
+            grand += lineTotal;
+        });
+        document.getElementById('grand-total').textContent = '$' + grand.toFixed(2);
+    }
+
+    // Rewrite prefixes on all NEW rows so they are contiguous starting at
+    // initialCount, and update TOTAL_FORMS to match. Saved (initial) rows
+    // must keep their original index so Django can match them by pk.
+    function reindexRows() {
+        const rows = document.querySelectorAll('#item-tbody .item-row');
+        rows.forEach((row, i) => {
+            if (i < initialCount) return;
+            const newPrefix = 'items-' + i + '-';
+            row.querySelectorAll('input, select, textarea, label, button').forEach(el => {
+                ['name', 'id', 'for'].forEach(attr => {
+                    const v = el.getAttribute(attr);
+                    if (v && /items-\d+-/.test(v)) {
+                        el.setAttribute(attr, v.replace(/items-\d+-/, newPrefix));
+                    }
+                });
             });
         });
-    </script>
-</body>
-</html>
+        totalForms.value = rows.length;
+    }
+
+    function removeRow(btn) {
+        btn.closest('tr').remove();
+        reindexRows();
+        recalc();
+    }
+
+    document.getElementById('add-item-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const templateHtml = document.getElementById('empty-row-template').innerHTML;
+        const nextIndex = document.querySelectorAll('#item-tbody .item-row').length;
+        const newRow = templateHtml.replace(/__prefix__/g, nextIndex);
+        tbody.insertAdjacentHTML('beforeend', newRow);
+        totalForms.value = nextIndex + 1;
+        recalc();
+    });
+
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input[name$="-quantity"], input[name$="-unit_price"]')) {
+            recalc();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', recalc);
+</script>
+{% endblock %}
